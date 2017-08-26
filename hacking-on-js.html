@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Syracuse Javascript</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif';
+        line-height: 1.5;
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      h1.full-page {
+        position: absolute;
+        top: 50%;
+        margin-top: -36px;
+        font-size: 72px;
+        text-align: center;
+        width: 100%;
+        margin-left: -80px;
+      }
+      .remark-code, .remark-inline-code {
+        font-family: 'Inconsolata', 'Ubuntu Mono', monospace;
+      }
+      .remark-code {
+        border: 2px solid #72ab4d;
+        border-radius: 4px;
+        font-size: 17px;
+      }
+
+      .big-banner {
+        width: 60%;
+        margin-top: 100px;
+        margin-bottom: 50px;
+        background-color: #31394d;
+        color: #fff;
+        border: 2px solid #72ab4d;
+        border-radius: 4px;
+        padding: 20px 10px;
+        font-family: 'Inconsolata', 'Ubuntu Mono', monospace; 
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Hacking on Javascript on the server in the browser
+## (and the module systems used)
+
+---
+
+# Overview
+
+1. Javascript in the browser (with chrome).
+2. Javascript on the server (with node).
+3. A high level introduction to the module system in node.
+4. A discussion the the differences between popular module systems.
+5. Advanced tidbit: The cool new `import()` operator!
+
+---
+
+# In the browser console
+![http://i.imgur.com/FISLhmk.png](http://i.imgur.com/FISLhmk.png)
+
+---
+<img src="http://i.imgur.com/4OMWuuI.png" style="width: 100%;" />
+---
+# Scratchjs
+
+<img src="http://i.imgur.com/3Xwvp3X.png" style="width: 100%;" />
+
+---
+# In node
+Visit [nvm.sh](nvm.sh), and run the install snippet:
+
+```sh
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+```
+
+<img src="http://i.imgur.com/pYclfSC.png" style="width: 100%;" />
+---
+<img src="http://i.imgur.com/RPlqYB9.png" style="width: 100%;" />
+---
+<h1 class="full-page">Module Systems</h1>
+---
+# What is a module system?
+
+- A module is a small unit of of code. (In most module systems, a module is defined by putting code
+into a seperate file)
+
+- A module system is used to express dependencies between different modules.
+---
+# Module Systems
+
+- CommonJS: Node's module system. (`require` and `module`)
+
+- AMD: Asynchronous module definition. A module system traditionally used in the browser for loading
+modules after the page has loaded. Uses the `define` global.
+
+- ES2015 modules: The newish module system released by TC39 in 2015.
+
+- SystemJS: Another module system. Used with jspm. Mostly obsolete these days.
+
+- And more...
+---
+# TL;DR
+
+Javascript people are always trying new things.
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+<iframe src="https://giphy.com/embed/eSjmuv0wMC9r2" width="480" height="274" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p></p>
+---
+# CommonJS
+<center>
+  <div class="big-banner">const myModule = require('./path/to/module.js');</div>
+  Used to extract exports from the given module path.
+</center>
+---
+# CommonJS
+<center>
+  <div class="big-banner">module.exports = myThing;</div>
+  Set this equal to what the current module should export as public to other modules.
+</center>
+---
+# CommonJS
+<center>
+  <div class="big-banner">module.exports = {one: 1, two: 2};</div>
+  Modules can export multiple things by encapsulating multiple values into an array or object.
+</center>
+---
+# CommonJS
+<center>
+  <div class="big-banner">
+    const mod = require('./path/to/module.js');
+    console.log(mod.one, mod.two); // 1, 2
+  </div>
+  To import multiple things from a module, access elements in the exported value.
+</center>
+---
+# CommonJS - Example
+
+```javascript
+// add.js
+function add(a, b) {  
+  return a + b;
+}
+
+module.exports = add;
+```
+
+```javascript
+// index.js
+const add = require('./add');
+console.log('Adding 4 and 5 produced', add(4, 5));
+```
+
+And, when run:
+```sh
+$ node index.js
+Adding 4 and 5 produces 9
+```
+---
+<h1 class="full-page">Demo</h1>
+---
+<h1 class="full-page">ES2015</h1>
+---
+# ES2015
+<center>
+  <div class="big-banner">import myModule from './path/to/module.js';</div>
+  Used to extract the exported value from the given module path.
+</center>
+---
+# ES2015
+<center>
+  <div class="big-banner">export default myThing;</div>
+  Set this equal to what the current module should export as public to other modules.
+</center>
+---
+# Worth noting
+- ES2015 distinguishes between exporting a single value and exporting multiple values, while CommonJS
+does not.
+- This is kinda a big deal!
+---
+# ES2015
+<center>
+  <div class="big-banner">
+    export default 'foo';<br/>
+    export const one = 1;<br/>
+    export const two = 2;
+  </div>
+  Modules can export multiple things by using the <code>export</code> keyword multiple times.
+</center>
+---
+# ES2015
+<center>
+  <div class="big-banner">
+    import foo, {one, two} from './path/to/module.js';
+    console.log(foo, one, two); // 'foo', 1, 2
+  </div>
+  To import multiple things from a module, request names and default values in the import statement.
+</center>
+---
+<h1 class="full-page">Demo</h1>
+---
+# Import operator
+
+You can't do this: `const a = './path/to/module.js'; import foo from a;` easily. However:
+
+<div class="big-banner">
+  import('./path/to/module.js').then(m => {<br/>
+  &nbsp;&nbsp;// m is your module reference!<br/>
+  });
+</div>
+
+[Read More](http://2ality.com/2017/01/import-operator.html). It's stage 3, but it's heavily used
+already in bundle splitting.
+
+---
+# Thanks!
+<img style="width: 100%;" src="http://i.imgur.com/W7vDy7K.png" />
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
