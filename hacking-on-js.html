@@ -45,6 +45,20 @@
         padding: 20px 10px;
         font-family: 'Inconsolata', 'Ubuntu Mono', monospace; 
       }
+
+      @keyframes change-color {
+        0% { color: red; }
+        10% { color: royalblue; }
+        20% { color: magenta; }
+        30% { color: green; }
+        40% { color: yellow; }
+        50% { color: orange; }
+        60% { color: cyan; }
+        70% { color: wheat; }
+        80% { color: crimson; }
+        90% { color: chocolate; }
+        100% { color: bisque; }
+      }
     </style>
   </head>
   <body>
@@ -52,7 +66,7 @@
 
 class: center, middle
 
-# Hacking on Javascript on the server in the browser
+# Hacking with javascript
 ## (and the module systems used)
 
 ---
@@ -89,55 +103,83 @@ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | b
 ---
 <img src="http://i.imgur.com/RPlqYB9.png" style="width: 100%;" />
 ---
+```javascript
+function magic(a, b) {  
+  return a + b;
+}
+
+console.log('Magic on 4 and 5 produces', magic(4, 5)); // 9
+```
+---
+```javascript
+function magic(a, b) {  
+  const magicCoefficientA = Math.sqrt(Math.pow(a, 2) + Math.pow(5, b));
+  const magicCoefficientB = Math.sqrt((a + b) / (a - b)) + 5 / 9;
+  return a &gt; b ?
+    (magicCoefficientB * b) + (magicCoefficientA * a) :
+    (magicCoefficientA * b) + (magicCoefficientB * a);
+}
+
+console.log('Magic on 4 and 5 produces', magic(4, 5)); // ???
+```
+---
+
 <h1 class="full-page">Module Systems</h1>
 ---
-# What is a module system?
-
-- A module is a small unit of of code. (In most module systems, a module is defined by putting code
-into a seperate file)
-
-- A module system is used to express dependencies between different modules.
+<img src="ModuleChartFirst.png" style="width: 100%;" />
 ---
-# Module Systems
+<img src="ModuleChartJustAdd.png" style="width: 100%;" />
+---
+<img src="ModuleChartNoFinalDeps.png" style="width: 100%;" />
+---
+<img src="ModuleChartFinal.png" style="width: 100%;" />
+---
 
-- CommonJS: Node's module system. (`require` and `module`)
+# Some Module Systems
 
-- AMD: Asynchronous module definition. A module system traditionally used in the browser for loading
-modules after the page has loaded. Uses the `define` global.
+- CommonJS:
+```javascript
+const m = require('./my/module.js');
+module.exports = 123;
+```
 
-- ES2015 modules: The newish module system released by TC39 in 2015.
+- AMD:
+```javascript
+define('myModule', ['dependency1', 'dependency2'], function(dep1, dep2) {
+      return 123; // Exported out of `myModule`.
+})
+```
+- ES2015 modules:
+```javascript
+import m from './my/module.js';
+export default 123;
+```
 
-- SystemJS: Another module system. Used with jspm. Mostly obsolete these days.
+- SystemJS, RequireJS, AngularJS modules, UMD, and more
 
 - And more...
 ---
 # TL;DR
 
-Javascript people are always trying new things.
-
-<br/>
-<br/>
-<br/>
-<br/>
-
 <iframe src="https://giphy.com/embed/eSjmuv0wMC9r2" width="480" height="274" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p></p>
 ---
 # CommonJS
 <center>
-  <div class="big-banner">const myModule = require('./path/to/module.js');</div>
-  Used to extract exports from the given module path.
-</center>
----
-# CommonJS
-<center>
   <div class="big-banner">module.exports = myThing;</div>
-  Set this equal to what the current module should export as public to other modules.
+  The module's public exports.
 </center>
 ---
 # CommonJS
 <center>
   <div class="big-banner">module.exports = {one: 1, two: 2};</div>
-  Modules can export multiple things by encapsulating multiple values into an array or object.
+  Modules can export multiple things, too!<br/>
+  Just encapsulate multiple values into an array or object.
+</center>
+---
+# CommonJS
+<center>
+  <div class="big-banner">const myModule = require('./path/to/module.js');</div>
+  From another module, get the contents of the given module's <code>module.exports</code>.
 </center>
 ---
 # CommonJS
@@ -146,7 +188,7 @@ Javascript people are always trying new things.
     const mod = require('./path/to/module.js');
     console.log(mod.one, mod.two); // 1, 2
   </div>
-  To import multiple things from a module, access elements in the exported value.
+  To import multiple things from a module, unpack the return value of <code>require</code>.
 </center>
 ---
 # CommonJS - Example
@@ -163,7 +205,7 @@ module.exports = add;
 ```javascript
 // index.js
 const add = require('./add');
-console.log('Adding 4 and 5 produced', add(4, 5));
+console.log('Adding 4 and 5 produces', add(4, 5));
 ```
 
 And, when run:
@@ -178,20 +220,30 @@ Adding 4 and 5 produces 9
 ---
 # ES2015
 <center>
-  <div class="big-banner">import myModule from './path/to/module.js';</div>
-  Used to extract the exported value from the given module path.
+  <div class="big-banner">export default myThing;</div>
+  The module's public, default export.
 </center>
 ---
 # ES2015
 <center>
-  <div class="big-banner">export default myThing;</div>
-  Set this equal to what the current module should export as public to other modules.
+  <div class="big-banner">import myModule from './path/to/module.js';</div>
+  Used to extract the exported value from the given module path.
 </center>
 ---
-# Worth noting
-- ES2015 distinguishes between exporting a single value and exporting multiple values, while CommonJS
-does not.
-- This is kinda a big deal!
+# Named exports... WTF?
+
+Two types of exports: Named exports and default exports.
+
+```javascript
+// This module exports two things, `namedExportOne` and `namedExportTwo`
+import { namedExportOne, namedExportTwo } from './my/module.js';
+
+// This module exports one thing by default, `defaultExport`
+import defaultExport from './my/other/module.js';
+
+// Or, both!
+import foo, { bar, baz } from './my/crazy/module.js';
+```
 ---
 # ES2015
 <center>
@@ -200,7 +252,8 @@ does not.
     export const one = 1;<br/>
     export const two = 2;
   </div>
-  Modules can export multiple things by using the <code>export</code> keyword multiple times.
+  Named exports forgo the `default` keyword.<br/>
+  The <code>export</code> keyword is used multiple times.
 </center>
 ---
 # ES2015
@@ -216,17 +269,51 @@ does not.
 ---
 # Import operator
 
-You can't do this: `const a = './path/to/module.js'; import foo from a;` easily. However:
+<center>
+  <div class="big-banner">
+    const a = './path/to/module.js';<br/>
+    import foo from a;
+  </div>
+  Won't work!
+</center>
+---
+# Why - Static analysis / Tree shaking
+<img src="ModuleChartTreeShaking.png" style="width: 100%;" />
+---
+# Why - Static analysis / Tree shaking
+<img src="ModuleChartTreeShaking2.png" style="width: 100%;" />
+<!-- Don't know where the exports some from? Can't tree shake. -->
+---
+# Import operator
 
-<div class="big-banner">
-  import('./path/to/module.js').then(m => {<br/>
-  &nbsp;&nbsp;// m is your module reference!<br/>
-  });
-</div>
+```javascript
+const a = './path/to/module.js';
+import(a).then(m => {
+  // m is your module reference!
+});
+```
 
-[Read More](http://2ality.com/2017/01/import-operator.html). It's stage 3, but it's heavily used
-already in bundle splitting.
+[Read More](http://2ality.com/2017/01/import-operator.html)
+---
+# How the module operator works
+- Implementation dependant
+- Webpack = uses voodoo or follows the spec
+- Rough implmentation (according to spec):
+```javascript
+    function importOperator(path) {
+      return fetch(path).then(resp => {
+        if (resp.ok) {
+          return resp.text().then(code => {
+            const wrapped = `var result = (function(){ ${code} })();`;
+            eval(wrapped);
+            return result;
+          });
+        }
+      });
+    }
+```
 
+<marquee style="animation: change-color 5s infinite" >Only execute trusted javascript!&nbsp;&nbsp;Only execute trusted javascript!&nbsp;&nbsp;Only execute trusted javascript!</marquee>
 ---
 # Thanks!
 <img style="width: 100%;" src="http://i.imgur.com/W7vDy7K.png" />
