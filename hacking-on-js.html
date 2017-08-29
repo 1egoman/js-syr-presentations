@@ -66,8 +66,7 @@
 
 class: center, middle
 
-# Hacking with javascript
-## (and the module systems used)
+# Hacking on and growing javascript projects
 
 [bit.do/syrjs](http://bit.do/syrjs)
 
@@ -79,7 +78,7 @@ class: center, middle
 2. Javascript on the server (with node).
 3. A high level introduction to the module system in node.
 4. A discussion the the differences between popular module systems.
-5. Advanced tidbit: The cool new `import()` operator!
+5. The little known, cool new `import()` operator!
 
 ---
 
@@ -117,6 +116,24 @@ console.log('Magic on 4 and 5 produces', magic(4, 5)); // 9
 function magic(a, b) {  
   const magicCoefficientA = Math.sqrt(Math.pow(a, 2) + Math.pow(5, b));
   const magicCoefficientB = Math.sqrt((a + b) / (a - b)) + 5 / 9;
+  return a &gt; b ?
+    (magicCoefficientB * b) + (magicCoefficientA * a) :
+    (magicCoefficientA * b) + (magicCoefficientB * a);
+}
+
+console.log('Magic on 4 and 5 produces', magic(4, 5)); // ???
+```
+---
+```javascript
+function calculateCoefficientA(a, b) {
+  return Math.sqrt(Math.pow(a, 2) + Math.pow(5, b));
+}
+function calculateCoefficientB(a, b) {
+  return Math.sqrt((a + b) / (a - b)) + 5 / 9;
+}
+function magic(a, b) {  
+  const magicCoefficientA = calculateCoefficientA(a, b);
+  const magicCoefficientB = calculateCoefficientB(a, b);
   return a &gt; b ?
     (magicCoefficientB * b) + (magicCoefficientA * a) :
     (magicCoefficientA * b) + (magicCoefficientB * a);
@@ -164,6 +181,15 @@ export default 123;
 # TL;DR
 
 <iframe src="https://giphy.com/embed/eSjmuv0wMC9r2" width="480" height="274" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p></p>
+---
+# Input and output
+```javascript
+function(dependency1, dependency2) {
+  return "result";
+}
+```
+---
+<h1 class="full-page">CommonJS</h1>
 ---
 # CommonJS
 <center>
